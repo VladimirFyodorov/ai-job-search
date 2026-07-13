@@ -20,3 +20,20 @@ services:
       timeout: 10s
       retries: 3
       start_period: 60s
+
+  scheduler:
+    build: .
+    command: python3 tools/crons/scheduler.py
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      - TZ=Europe/Belgrade
+      - HUNTER_CONTAINER_NAME=hunter-v2-1
+    volumes:
+      - ~/.claude:/home/hunter/.claude
+      - ./logs:/app/logs
+      - /var/run/docker.sock:/var/run/docker.sock
+    user: root
+    depends_on:
+      hunter:
+        condition: service_healthy

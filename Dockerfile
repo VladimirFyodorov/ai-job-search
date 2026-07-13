@@ -31,7 +31,8 @@ RUN pip3 install --break-system-packages \
     python-dotenv \
     rapidfuzz \
     notion-client \
-    feedparser
+    feedparser \
+    apscheduler
 
 # Non-root user required by claude --dangerously-skip-permissions
 RUN useradd -m -s /bin/bash hunter
