@@ -21,6 +21,8 @@ _BASE_URL = "https://www.linkedin.com/jobs/search"
 class LinkedInScraper:
     """Scrape job listings from LinkedIn public search pages."""
 
+    name = "LinkedIn"
+
     def __init__(self, max_results: int = 20, location: str = "Belgrade"):
         self.max_results = max_results
         self.location = location
@@ -118,3 +120,7 @@ class LinkedInScraper:
             return results
 
         return results[:limit]
+
+    def search(self, query: str, location: str = None) -> list[dict]:
+        """Portal plugin interface — delegates to fetch()."""
+        return self.fetch(query, location=location)
