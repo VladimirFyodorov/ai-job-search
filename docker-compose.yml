@@ -1,0 +1,22 @@
+services:
+  hunter:
+    build: .
+    tty: true
+    stdin_open: true
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      - TZ=Europe/Belgrade
+      - TELEGRAM_STATE_DIR=/home/hunter/.claude/channels/telegram-hunter-v2
+    volumes:
+      - ~/.claude:/home/hunter/.claude          # Claude Code plugin/channel state
+      - ./.claude.json:/home/hunter/.claude.json # Dedicated auth file (separate device session)
+      - ./logs:/app/logs                         # structured logs
+      - ./config:/app/config                     # notion_db_ids.json
+    container_name: hunter-v2-1
+    healthcheck:
+      test: ["CMD", "test", "-f", "/app/logs/last-reply-sent.txt"]
+      interval: 60s
+      timeout: 10s
+      retries: 3
+      start_period: 60s

@@ -2,9 +2,36 @@
   <img src="assets/mascot/pip_flight_loop.gif" alt="Pip, the courier bird" width="200">
 </p>
 
-# AI Job Search
+# Hunter v2 — Sofia's Job Search Assistant
 
-*The job search that runs on your machine.*
+*Forked from [MadsLorentzen/ai-job-search](https://github.com/MadsLorentzen/ai-job-search). Adapted for Telegram + Notion UI.*
+
+**Stack:** Claude Code CLI · plugin:telegram · Notion (5 DBs) · Docker Compose · LinkedIn scraping · LaTeX PDF
+
+**UX:** Sofia chats in Telegram → gets job digest → requests cover letter → receives PDF. No CLI needed.
+
+## Quick Start
+
+```bash
+cp .env.example .env          # fill in tokens
+docker compose run --rm hunter python3 tools/notion/setup.py  # create Notion DBs
+# Fill Sofia's CV in Notion → CV/Profile
+docker compose up -d          # start
+```
+
+## Telegram Commands
+
+| Command | Description |
+|---------|-------------|
+| `/scrape [query]` | Search jobs → score → digest + save to Notion |
+| `/apply <URL>` | CV adaptation + cover letter → LaTeX PDF → send |
+| `/rank` | Batch score jobs from Notion |
+| `/add-portal <name>` | Add Jooble, Infostud, etc. |
+| `/status` | Today's summary |
+| `/settings` | Notion config values |
+| `/help` | Command list |
+
+## Original AI Job Search
 
 <p align="center">
   <a href="https://trendshift.io/repositories/43622?utm_source=trendshift-badge&amp;utm_medium=badge&amp;utm_campaign=badge-trendshift-43622" target="_blank" rel="noopener noreferrer"><img src="https://trendshift.io/api/badge/trendshift/repositories/43622/daily" alt="MadsLorentzen%2Fai-job-search | Trendshift" width="250" height="55"/></a>

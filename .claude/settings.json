@@ -1,11 +1,47 @@
 {
+  "enabledPlugins": {
+    "telegram@claude-plugins-official": true
+  },
   "permissions": {
     "allow": [
       "Skill(job-application-assistant)",
+      "Skill(job-scraper)",
+      "Skill(upskill)",
+      "Bash(bun:*)",
       "Bash(bun run:*)",
+      "Bash(bun --version)",
       "Bash(python salary_lookup.py:*)",
       "Bash(python3 salary_lookup.py:*)",
-      "Bash(pdftotext:*)"
+      "Bash(python3 tools/*:*)",
+      "Bash(pdftotext:*)",
+      "Bash(ffmpeg:*)",
+      "Bash(lualatex:*)",
+      "Bash(xelatex:*)",
+      "Bash(curl:*)"
+    ]
+  },
+  "hooks": {
+    "Stop": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash tools/health/push_context_stats.sh 2>/dev/null || true"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash tools/health/push_context_stats.sh 2>/dev/null || true"
+          }
+        ]
+      }
     ]
   }
 }

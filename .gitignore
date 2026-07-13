@@ -75,3 +75,7 @@ upskill/*.md
 
 # Brainstorm mockups (superpowers visual companion) - never ship
 .superpowers/
+logs/
+config/notion_db_ids.json
+.env
+.claude.json
