@@ -43,19 +43,19 @@ seen = load_seen("config/seen_jobs.json")
 
 `load_seen` returns a dict `{url: {...}}`. Creates the file if absent.
 
-### Step 3 — Scrape portals in parallel
+### Step 3 — Scrape portals via registry
 
 ```python
-from tools.jobs.linkedin import LinkedInScraper
-from tools.jobs.jooble import JoobleScraper
+from tools.jobs.portals import list_portals, get_portal
 
-linkedin_jobs = LinkedInScraper().fetch(query)
-jooble_jobs   = JoobleScraper().fetch(query)
-all_jobs = linkedin_jobs + jooble_jobs
+all_jobs = []
+for name in list_portals():
+    portal = get_portal(name)
+    portal_jobs = portal.search(query)
+    all_jobs.extend(portal_jobs)
 ```
 
-`scrape_linkedin` and `scrape_jooble` are also available as module-level aliases
-from `tools.jobs` (i.e. `from tools.jobs import scrape_linkedin, scrape_jooble`).
+Note: Backward-compat: `scrape_linkedin` and `scrape_jooble` aliases still available from `tools.jobs`
 
 Each item in the returned list is a dict with at minimum:
 `title`, `company`, `url`, `location`, `source`.
@@ -147,6 +147,10 @@ exception. Always attempt to save `seen` before raising.
 |--------|----------|---------|
 | `scrape_linkedin` / `LinkedInScraper` | `tools.jobs.linkedin` | LinkedIn portal scraper |
 | `scrape_jooble` / `JoobleScraper` | `tools.jobs.jooble` | Jooble portal scraper |
+| `BasePortal` | `tools.jobs.portals.base` | Abstract base class for all portals |
+| `JooblePortal` | `tools.jobs.portals.jooble` | Jooble API portal |
+| `InfostudPortal` | `tools.jobs.portals.infostud` | Infostud (Serbia) portal |
+| `list_portals`, `get_portal`, `register` | `tools.jobs.portals` | Portal registry |
 | `score_jobs` | `tools.jobs.scorer` | LLM batch scoring |
 | `load_seen`, `is_duplicate`, `mark_seen`, `save_seen` | `tools.jobs.dedup` | Deduplication helpers |
 | `NotionWriter` | `tools.jobs.notion_writer` | Notion database writer |
