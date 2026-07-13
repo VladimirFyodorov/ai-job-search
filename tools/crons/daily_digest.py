@@ -79,6 +79,47 @@ def inject_trigger(container_name: str) -> bool:
         return False
 
 
+LOG_FILE = os.path.join(os.path.dirname(__file__), '..', '..', 'logs', 'daily-digest.log')
+
+
+def run_daily_digest(container_name: str | None = None) -> bool:
+    """Run the daily digest: inject trigger into hunter container and log result.
+
+    Writes log entries to logs/daily-digest.log (in addition to stdout logging).
+
+    Args:
+        container_name: Docker container name. Defaults to HUNTER_CONTAINER_NAME env var
+                        or 'hunter-v2-1'.
+
+    Returns:
+        True on success, False on failure.
+    """
+    if container_name is None:
+        container_name = os.environ.get('HUNTER_CONTAINER_NAME', 'hunter-v2-1')
+
+    now = datetime.now().isoformat(timespec='seconds')
+    logger.info("run_daily_digest: starting run for container=%s at %s", container_name, now)
+
+    result = inject_trigger(container_name)
+
+    status = "completed successfully" if result else "failed"
+    log_line = f"{now} INFO daily_digest: {status} container={container_name}\n"
+
+    try:
+        with open(LOG_FILE, 'a', encoding='utf-8') as fh:
+            fh.write(f"{now} INFO daily_digest: starting run for container={container_name}\n")
+            fh.write(log_line)
+    except OSError as exc:
+        logger.warning("run_daily_digest: could not write log file %s: %s", LOG_FILE, exc)
+
+    if result:
+        logger.info("run_daily_digest: completed successfully")
+    else:
+        logger.error("run_daily_digest: failed")
+
+    return result
+
+
 def main() -> None:
     container_name = os.environ.get("HUNTER_CONTAINER_NAME", "hunter-v2-1")
     now = datetime.now().isoformat(timespec="seconds")
