@@ -65,6 +65,53 @@ Every skill that takes more than ~3 seconds MUST send these messages:
 
 Use `reply()` for all notifications. Do NOT wait until the end to send all output at once.
 
+## Notification Utility
+
+Skills MUST call `tools/notify.py` functions instead of hardcoding `reply()` strings for start/done/error messages.
+
+### Function signatures
+
+```python
+notify_start(skill_name, sender=None)
+# Sends: "⚡ Начинаю /{skill_name}..."
+
+notify_progress(message, sender=None)
+# Sends: message unchanged
+# Optional — use only for operations that take more than 3 seconds
+
+notify_done(skill_name, summary, sender=None)
+# Sends: "✅ /{skill_name} готово: {summary}"
+
+notify_error(skill_name, user_msg_ru, admin_msg_en=None, sender=None, admin_sender=None)
+# Sends user_msg_ru to sender (Sofia's chat)
+# Sends admin_msg_en to admin_sender (TELEGRAM_ADMIN_CHAT_ID) if provided
+```
+
+### Example usage
+
+At the start of a command handler:
+```python
+notify_start("scrape", sender=reply)
+```
+
+For errors with dual-message routing:
+```python
+notify_error(
+    "scrape",
+    "Что-то пошло не так 🛠",
+    admin_msg_en=f"Scrape failed: {e}",
+    sender=reply,
+    admin_sender=admin_reply,
+)
+```
+
+### Rules
+
+- `notify_progress` is **optional** — only send for sub-steps taking >3 seconds
+- `sender` is the `reply()` callable for the current chat session
+- `admin_sender` is the `reply()` callable bound to `TELEGRAM_ADMIN_CHAT_ID`
+- Never call `reply()` directly for start/done/error — always go through notify functions
+
 ## Scoring Criteria
 
 Scoring criteria live in **Notion Config DB** — Sofia can edit them there directly.
