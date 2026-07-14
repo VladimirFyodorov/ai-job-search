@@ -96,8 +96,8 @@ def _get_config_value(config_results: list, key: str, default=None):
     """Extract a value from Config DB query results (key-value store)."""
     for page in config_results:
         props = page.get("properties", {})
-        # Config DB stores key in "Name" (title) property and value in "Value" (rich_text)
-        name_prop = props.get("Name", {})
+        # Config DB stores key in "Key" (title) property and value in "Value" (rich_text)
+        name_prop = props.get("Key", {})
         name_val = ""
         if name_prop.get("type") == "title":
             title_list = name_prop.get("title", [])
@@ -222,6 +222,16 @@ def get_status(context_pct=None) -> str:
             )
             jobs_matching = len(jobs_matching_results)
 
+            # Jobs at Interview stage (Status = "Interview" lives in Jobs DB, not Applications DB)
+            interview_filter = {
+                "property": "Status",
+                "select": {"equals": "Interview"},
+            }
+            interview_results = notion.query_db(
+                jobs_db_id, filter=interview_filter, page_size=1000
+            )
+            apps_interview = len(interview_results)
+
             # Last search: newest job by Date Added
             if all_jobs:
                 # Sort by Date Added desc — use created_time as fallback
@@ -251,7 +261,6 @@ def get_status(context_pct=None) -> str:
             apps_total = len(all_apps)
 
             apps_waiting_count = 0
-            apps_interview_count = 0
             newest_app_date = None
 
             for app in all_apps:
@@ -267,8 +276,6 @@ def get_status(context_pct=None) -> str:
 
                 if status_val in ("Sent", "Acknowledged"):
                     apps_waiting_count += 1
-                elif status_val == "Interview":
-                    apps_interview_count += 1
 
                 created = app.get("created_time", "")
                 if created:
@@ -276,7 +283,6 @@ def get_status(context_pct=None) -> str:
                         newest_app_date = created
 
             apps_waiting = apps_waiting_count
-            apps_interview = apps_interview_count
 
             if newest_app_date:
                 last_apply = _format_time_ago(newest_app_date)
