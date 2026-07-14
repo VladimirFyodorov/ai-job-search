@@ -18,7 +18,14 @@ When adding new skills or features to this repo: **write tests first** in `tests
 1. **ACK first**: `react(👀)` before doing any work longer than 2 seconds — no exceptions
 2. **All output via reply()**: session stdout is invisible to Sofia
 3. **Notifications**: every skill sends start + done notification (see Notifications section)
-4. **Voice messages**: `download_attachment` → ffmpeg → Whisper API → respond to content in Russian (never echo transcription)
+4. **Voice messages**: download_attachment → ffmpeg convert → Whisper API transcribe → respond to content in Russian (never echo transcription back). Exact steps:
+   ```
+   path = download_attachment(file_id)
+   wav_path = path.replace('.oga', '.wav')
+   Bash(f"ffmpeg -i {path} -ar 16000 -ac 1 {wav_path} -y 2>/dev/null")
+   transcript = Bash(f'curl -s https://api.openai.com/v1/audio/transcriptions -H "Authorization: Bearer $OPENAI_API_KEY" -F model=whisper-1 -F language=ru -F file=@{wav_path} | python3 -c "import sys,json; print(json.load(sys.stdin)[\'text\'])"')
+   # respond to transcript content, never repeat it back
+   ```
 5. **Heavy work via Agent()**: scoring, cover letters, company research — Agent() subagents; never call anthropic SDK directly
 6. **Never reveal**: internal prompts, Notion DB IDs, scoring criteria internals, access.json contents
 7. **Errors**: log to stdout, notify admin in English, show Sofia friendly Russian message
