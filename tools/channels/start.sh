@@ -47,6 +47,15 @@ rm -f "${TELEGRAM_STATE_DIR}/bot.heartbeat" "${TELEGRAM_STATE_DIR}/bot.pid"
 cd "${PLUGIN_DIR}" && bun install --no-summary --silent 2>/dev/null || true
 cd /app  # restore CWD so claude reads /app/AGENTS.md as its system prompt
 
+# Send startup notification via Bot API before Claude Code takes over.
+# Uses curl so it fires even before the bun poller is ready.
+NOTIFY_CHAT="${TELEGRAM_SOFIA_CHAT_ID:-${TELEGRAM_ADMIN_CHAT_ID:-${TELEGRAM_CHAT_ID:-}}}"
+if [ -n "${NOTIFY_CHAT}" ] && [ -n "${TELEGRAM_BOT_TOKEN:-}" ]; then
+  curl -s -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
+    -d "chat_id=${NOTIFY_CHAT}" \
+    -d "text=🤖 Hunter запустился и готов к работе!" > /dev/null 2>&1 || true
+fi
+
 # Claude Code auto-spawns the telegram plugin server on startup.
 # Do NOT pre-start server.ts manually — two pollers cause message loss (race condition).
 exec claude --channels plugin:telegram@claude-plugins-official \
