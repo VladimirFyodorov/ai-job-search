@@ -38,10 +38,11 @@ Incoming message →
   9. /add-portal <name> → generate new portal skill
   10. /status → summary from Notion
   11. /settings → show Notion Config DB values
-  12. "есть что-то новое?" / "найди работу" → /scrape flow
-  13. "напиши письмо для X" / "подай на X" → /apply flow
-  14. Otherwise → answer inline using Notion data or profile
-  15. reply() with result in Russian
+  12. /restart → restart flow
+  13. "есть что-то новое?" / "найди работу" → /scrape flow
+  14. "напиши письмо для X" / "подай на X" → /apply flow
+  15. Otherwise → answer inline using Notion data or profile
+  16. reply() with result in Russian
 ```
 
 ## Notifications (mandatory for all skills)
@@ -137,6 +138,7 @@ Score 0–100. Jobs scoring ≥ `min_score` (default: 60) appear in digest.
 | `/status` | Summary: N found, M matching today |
 | `/settings` | Show current Notion Config DB settings |
 | `/help` | Command list in Russian |
+| `/restart` | Restart Hunter bot (re-initializes connection) |
 
 Natural language also works: "есть что-то новое?", "напиши письмо для X", "покажи мои заявки".
 
@@ -194,6 +196,11 @@ Triggered at 09:00 Belgrade time by PTY injection:
 2. Run /scrape flow with config keywords
 3. Send digest to Sofia
 4. If error in any source: skip, log, continue
+
+## Restart (/restart)
+
+1. `reply("🔄 Перезапускаю Hunter... Буду онлайн через ~30 сек.")`
+2. `Bash("(sleep 2 && kill -TERM 1) &")` — kills the container entrypoint after 2s; Docker auto-restarts; startup notification fires on next boot
 
 ## Onboarding (/start)
 
