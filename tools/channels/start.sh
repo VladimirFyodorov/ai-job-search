@@ -26,6 +26,9 @@ if [ ! -f "${TELEGRAM_STATE_DIR}/access.json" ]; then
   fi
 fi
 
+# Write startup timestamp so tools/status.py can show "launched N min ago"
+date -u +%Y-%m-%dT%H:%M:%SZ > "${TELEGRAM_STATE_DIR}/startup_time"
+
 echo "[hunter] Starting Claude Code with telegram plugin..."
 echo "[hunter] TELEGRAM_STATE_DIR=${TELEGRAM_STATE_DIR}"
 

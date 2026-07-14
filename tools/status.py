@@ -119,6 +119,33 @@ def _get_config_value(config_results: list, key: str, default=None):
     return default
 
 
+def _get_launch_time() -> str:
+    """Read startup time from state dir file written by start.sh."""
+    state_dir = os.environ.get(
+        "TELEGRAM_STATE_DIR", "/home/hunter/.claude/channels/telegram-hunter-v2"
+    )
+    ts_file = os.path.join(state_dir, "startup_time")
+    try:
+        with open(ts_file) as f:
+            ts_str = f.read().strip()
+        # Parse ISO UTC string e.g. "2026-07-14T10:39:22Z"
+        ts_str_clean = ts_str.rstrip("Z")
+        dt = datetime.fromisoformat(ts_str_clean).replace(tzinfo=timezone.utc)
+        dt_bel = dt.astimezone(_BELGRADE_TZ) if _BELGRADE_TZ else dt + _BELGRADE_OFFSET
+        now = datetime.now(timezone.utc)
+        delta = now - dt
+        total_minutes = int(delta.total_seconds() // 60)
+        if total_minutes < 1:
+            ago = "только что"
+        elif total_minutes < 60:
+            ago = f"{total_minutes}м назад"
+        else:
+            ago = f"{int(total_minutes // 60)}ч назад"
+        return f"{dt_bel.strftime('%H:%M')} ({ago})"
+    except Exception:
+        return "неизвестно"
+
+
 def get_status(context_pct=None) -> str:
     """
     Collect stats from Notion and return a formatted status string.
@@ -134,10 +161,13 @@ def get_status(context_pct=None) -> str:
         env_val = os.environ.get("CLAUDE_CONTEXT_PCT", "")
         context_pct = int(env_val) if env_val.isdigit() else "?"
 
-    # 2. Next digest time
+    # 2. Launch time
+    launch_time = _get_launch_time()
+
+    # 3. Next digest time
     digest_str = _next_digest_str()
 
-    # 3. Check LaTeX
+    # 4. Check LaTeX
     latex_ok = _check_latex()
     latex_icon = "✅" if latex_ok else "❌"
 
@@ -165,6 +195,7 @@ def get_status(context_pct=None) -> str:
     jobs_total = "?"
     jobs_today = "?"
     jobs_matching = "?"
+    jobs_new_unscored = "?"
     apps_total = "?"
     apps_waiting = "?"
     apps_interview = "?"
@@ -221,6 +252,21 @@ def get_status(context_pct=None) -> str:
                 jobs_db_id, filter=score_filter, page_size=1000
             )
             jobs_matching = len(jobs_matching_results)
+
+            # Jobs with Status=New and no Score yet (unprocessed)
+            new_unscored_filter = {
+                "and": [
+                    {"property": "Status", "select": {"equals": "New"}},
+                    {"property": "Score", "number": {"is_empty": True}},
+                ]
+            }
+            try:
+                new_unscored_results = notion.query_db(
+                    jobs_db_id, filter=new_unscored_filter, page_size=1000
+                )
+                jobs_new_unscored = len(new_unscored_results)
+            except Exception:
+                jobs_new_unscored = "?"
 
             # Jobs at Interview stage (Status = "Interview" lives in Jobs DB, not Applications DB)
             interview_filter = {
@@ -292,14 +338,17 @@ def get_status(context_pct=None) -> str:
 
     # ── Build formatted output ──
     lines = [
-        f"🤖 Hunter v2 · контекст {context_pct}%",
+        "🤖 Hunter v2",
+        f"  Запущен: {launch_time}",
+        f"  Контекст: {context_pct}%",
         "",
         f"📅 Дайджест: следующий в {digest_str}",
         "",
-        "📊 Вакансии:",
-        f"  Всего: {jobs_total} | Новых сегодня: {jobs_today} | Подходящих: {jobs_matching}",
+        "📊 Вакансии (Notion):",
+        f"  Всего: {jobs_total} | Новых сегодня: {jobs_today}",
+        f"  Подходящих (score≥{min_score}): {jobs_matching} | Новые без оценки: {jobs_new_unscored}",
         "",
-        "📬 Заявки (из Notion Applications DB):",
+        "📬 Заявки:",
         f"  Всего: {apps_total} | Ожидают ответа: {apps_waiting} | Интервью: {apps_interview}",
         "",
         "🕒 Последняя активность:",
