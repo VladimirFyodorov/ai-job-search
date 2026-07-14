@@ -22,7 +22,7 @@ fi
 if [ ! -f "${TELEGRAM_STATE_DIR}/access.json" ]; then
   ADMIN_ID="${TELEGRAM_ADMIN_CHAT_ID:-${TELEGRAM_CHAT_ID:-}}"
   if [ -n "${ADMIN_ID}" ]; then
-    echo "{\"dmPolicy\":\"allowlist\",\"allowFrom\":[\"${ADMIN_ID}\"],\"groups\":{},\"pending\":{}}" > "${TELEGRAM_STATE_DIR}/access.json"
+    echo "{\"dmPolicy\":\"allowlist\",\"allowFrom\":[\"${ADMIN_ID}\"],\"ackReaction\":\"👀\",\"groups\":{},\"pending\":{}}" > "${TELEGRAM_STATE_DIR}/access.json"
   fi
 fi
 
