@@ -27,6 +27,8 @@ docker exec -it hunter-v2-1 claude login
 
 Авторизация сохраняется в `~/.claude/credentials` (volume mount). При следующих запусках контейнера логин не нужен.
 
+⚠️ **После `claude login` обязательно**: `docker compose restart` — `claude login` внутри контейнера запускает второй bun server.ts (дублирующий Telegram poller). Два bun'а конкурируют: один показывает "печатает" но не отвечает. Рестарт очищает дубли.
+
 ### Срок действия токена
 
 OAuth токен истекает. Если Hunter перестал отвечать — первым делом проверить:
