@@ -56,6 +56,26 @@ if [ -n "${NOTIFY_CHAT}" ] && [ -n "${TELEGRAM_BOT_TOKEN:-}" ]; then
     -d "text=🤖 Hunter запустился и готов к работе!" > /dev/null 2>&1 || true
 fi
 
+# Register bot commands after bun's onStart fires (which resets them to English defaults).
+# Delay 60s to ensure bun has already called setMyCommands before we override.
+if [ -n "${TELEGRAM_BOT_TOKEN:-}" ]; then
+  (sleep 60 && curl -s -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/setMyCommands" \
+    -H "Content-Type: application/json" \
+    -d '{
+      "commands": [
+        {"command": "start",   "description": "Начать — приветствие и статус профиля"},
+        {"command": "scrape",  "description": "Найти новые вакансии"},
+        {"command": "apply",   "description": "CV + письмо для вакансии (URL)"},
+        {"command": "rank",    "description": "Оценить вакансии из Notion"},
+        {"command": "status",  "description": "Сводка поиска за сегодня"},
+        {"command": "settings","description": "Показать настройки Notion"},
+        {"command": "help",    "description": "Список всех команд"},
+        {"command": "restart", "description": "Перезапустить Hunter (~30 сек)"}
+      ],
+      "scope": {"type": "default"}
+    }') > /dev/null 2>&1 &
+fi
+
 # Claude Code auto-spawns the telegram plugin server on startup.
 # Do NOT pre-start server.ts manually — two pollers cause message loss (race condition).
 exec claude --channels plugin:telegram@claude-plugins-official \
