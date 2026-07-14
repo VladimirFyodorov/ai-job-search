@@ -56,24 +56,26 @@ if [ -n "${NOTIFY_CHAT}" ] && [ -n "${TELEGRAM_BOT_TOKEN:-}" ]; then
     -d "text=🤖 Hunter запустился и готов к работе!" > /dev/null 2>&1 || true
 fi
 
-# Register bot commands after bun's onStart fires (which resets them to English defaults).
-# Delay 60s to ensure bun has already called setMyCommands before we override.
-if [ -n "${TELEGRAM_BOT_TOKEN:-}" ]; then
-  (sleep 60 && curl -s -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/setMyCommands" \
+# Register bot commands using chat-specific scope so bun's onStart (which resets
+# the default scope to 3 English commands) doesn't override our Russian commands.
+# chat scope is more specific than default/all_private_chats and survives bun restarts.
+SOFIA_CHAT="${TELEGRAM_SOFIA_CHAT_ID:-${TELEGRAM_ADMIN_CHAT_ID:-${TELEGRAM_CHAT_ID:-}}}"
+if [ -n "${TELEGRAM_BOT_TOKEN:-}" ] && [ -n "${SOFIA_CHAT:-}" ]; then
+  (sleep 30 && curl -s -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/setMyCommands" \
     -H "Content-Type: application/json" \
-    -d '{
-      "commands": [
-        {"command": "start",   "description": "Начать — приветствие и статус профиля"},
-        {"command": "scrape",  "description": "Найти новые вакансии"},
-        {"command": "apply",   "description": "CV + письмо для вакансии (URL)"},
-        {"command": "rank",    "description": "Оценить вакансии из Notion"},
-        {"command": "status",  "description": "Сводка поиска за сегодня"},
-        {"command": "settings","description": "Показать настройки Notion"},
-        {"command": "help",    "description": "Список всех команд"},
-        {"command": "restart", "description": "Перезапустить Hunter (~30 сек)"}
+    -d "{
+      \"commands\": [
+        {\"command\": \"start\",   \"description\": \"Начать — приветствие и статус профиля\"},
+        {\"command\": \"scrape\",  \"description\": \"Найти новые вакансии\"},
+        {\"command\": \"apply\",   \"description\": \"CV + письмо для вакансии (URL)\"},
+        {\"command\": \"rank\",    \"description\": \"Оценить вакансии из Notion\"},
+        {\"command\": \"status\",  \"description\": \"Сводка поиска за сегодня\"},
+        {\"command\": \"settings\",\"description\": \"Показать настройки Notion\"},
+        {\"command\": \"help\",    \"description\": \"Список всех команд\"},
+        {\"command\": \"restart\", \"description\": \"Перезапустить Hunter (~30 сек)\"}
       ],
-      "scope": {"type": "default"}
-    }') > /dev/null 2>&1 &
+      \"scope\": {\"type\": \"chat\", \"chat_id\": ${SOFIA_CHAT}}
+    }") > /dev/null 2>&1 &
 fi
 
 # Claude Code auto-spawns the telegram plugin server on startup.
