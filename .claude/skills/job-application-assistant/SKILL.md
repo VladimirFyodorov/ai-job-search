@@ -15,6 +15,14 @@ allowed-tools: Read, Glob, Grep, WebFetch, WebSearch, Edit, Write, AskUserQuesti
 
 When the user provides a job posting (URL or text), follow this workflow:
 
+### Step 0: ACK and notify start
+
+```python
+from tools.notify import notify_start, notify_done
+react("👀")  # ACK first — before any work
+notify_start("job-application-assistant", sender=reply)
+```
+
 ### Step 1: Research & Evaluate Fit
 - Fetch the job posting content (use WebFetch for URLs)
 - Analyze the posting for required competencies, keywords, and priorities
@@ -55,6 +63,14 @@ When the user provides a job posting (URL or text), follow this workflow:
 | `05-cv-templates.md` | LaTeX CV structure and tailoring rules |
 | `06-cover-letter-templates.md` | LaTeX cover letter structure and tailoring rules |
 | `07-interview-prep.md` | STAR examples, tough questions, roleplay guidelines |
+
+---
+
+After all requested steps complete:
+
+```python
+notify_done("job-application-assistant", "готово", sender=reply)
+```
 
 ---
 

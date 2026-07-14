@@ -35,6 +35,14 @@ Optional arguments:
 
 ## Execution Steps
 
+### Step -1: ACK and notify start
+
+```python
+from tools.notify import notify_start, notify_done, notify_error
+react("👀")  # ACK first — before any work
+notify_start("scrape", sender=reply)
+```
+
 ### Step 0: Load State
 
 1. Read `job_scraper/seen_jobs.json` (create if missing - start with `{"seen": {}}`)
@@ -152,6 +160,10 @@ After presenting, ask:
 If the user picks a number, invoke the **job-application-assistant** skill workflow (fit evaluation first, then CV + cover letter if approved).
 
 If the run found many new jobs (roughly 8+), also suggest `/rank` - it batch-scores all new postings against the full fit framework and returns a ranked shortlist, which beats eyeballing a long table. (`/rank` sets the `ranked` and `expired` status values in `seen_jobs.json`; treat both as already-seen for dedup purposes.)
+
+```python
+notify_done("scrape", f"{len(new_jobs)} новых вакансий найдено", sender=reply)
+```
 
 ### Step 6: Update Tracker (Optional)
 

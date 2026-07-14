@@ -13,24 +13,27 @@ Manually triggers the daily job search digest. Sends the same PTY-injection trig
 
 ## What it does
 
-1. Sends "⚡ Начинаю /digest..." notification
-2. Calls inject_trigger() to send DAILY_DIGEST message to Claude's PTY stdin
-3. Claude processes the DAILY_DIGEST trigger: reads Notion Config → scrapes jobs → scores → filters (score≥60, not seen) → sends TG digest to Sofia
-4. Sends "✅ /digest запущен" notification
+1. `react(👀)` — ACK before any work
+2. `notify_start("digest", sender=reply)` — sends "⚡ Начинаю /digest..."
+3. Calls inject_trigger() to send DAILY_DIGEST message to Claude's PTY stdin
+4. Claude processes the DAILY_DIGEST trigger: reads Notion Config → scrapes jobs → scores → filters (score≥60, not seen) → sends TG digest to Sofia
+5. `notify_done("digest", ..., sender=reply)` — sends "✅ /digest готово: ..."
 
 ## Implementation
 
 ```python
 from tools.crons.daily_digest import inject_trigger
+from tools.notify import notify_start, notify_done, notify_error
 import os
 
+react("👀")  # ACK first — before any work
 container = os.environ.get('HUNTER_CONTAINER_NAME', 'hunter-v2-1')
-notify_start('digest')
+notify_start('digest', sender=reply)
 result = inject_trigger(container)
 if result:
-    notify_done('digest', 'дайджест запущен в Hunter контейнере')
+    notify_done('digest', 'дайджест запущен в Hunter контейнере', sender=reply)
 else:
-    notify_error('digest', 'Не удалось запустить дайджест', 'inject_trigger failed')
+    notify_error('digest', 'Не удалось запустить дайджест', 'inject_trigger failed', sender=reply)
 ```
 
 ## Environment variables

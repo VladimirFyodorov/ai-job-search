@@ -22,6 +22,14 @@ allowed-tools: Read, Write, Glob, Grep, WebFetch, WebSearch
 
 ---
 
+## Step 0: ACK and notify start
+
+```python
+from tools.notify import notify_start, notify_done
+react("👀")  # ACK first — before any work
+notify_start("upskill", sender=reply)
+```
+
 ## Step 1: Detect Mode
 
 Check whether the user provided a URL argument:
@@ -236,6 +244,10 @@ If no previous report exists, omit the "Since Last Report" section entirely.
 
 After saving, print:
 > "Report saved to `upskill/<filename>.md`. Review it anytime to track your learning progress."
+
+```python
+notify_done("upskill", f"отчёт сохранён в upskill/{filename}.md", sender=reply)
+```
 
 ## Important Rules
 

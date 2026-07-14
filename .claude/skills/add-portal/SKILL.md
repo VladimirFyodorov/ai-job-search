@@ -15,6 +15,14 @@ Adds a new job portal to hunter-v2's portal plugin system.
 
 ## Invoke Sequence
 
+### Step 0 — ACK and notify start
+
+```python
+from tools.notify import notify_start, notify_done, notify_error
+react("👀")  # ACK first — before any work
+notify_start("add-portal", sender=reply)
+```
+
 ### Step 1 — Validate inputs
 - `<name>`: lowercase, alphanumeric + hyphens only (regex `^[a-z][a-z0-9-]+$`); error if invalid
 - `<url>`: must start with `https://`; error if missing or invalid
@@ -73,7 +81,12 @@ from tools.jobs.portals.<name> import <Name>Portal
 register(<Name>Portal())
 ```
 
-### Step 4 — Confirm to user
+### Step 4 — Confirm to user and notify done
+
+```python
+notify_done("add-portal", f"портал {name!r} создан", sender=reply)
+```
+
 Reply with:
 - Portal file created: `tools/jobs/portals/<name>.py`
 - Registered in portal registry as `"<Name>"`
