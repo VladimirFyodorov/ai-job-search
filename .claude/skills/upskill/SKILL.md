@@ -26,7 +26,6 @@ allowed-tools: Read, Write, Glob, Grep, WebFetch, WebSearch
 
 ```python
 from tools.notify import notify_start, notify_done
-react("👀")  # ACK first — before any work
 notify_start("upskill", sender=reply)
 ```
 

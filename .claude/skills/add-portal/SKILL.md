@@ -19,7 +19,6 @@ Adds a new job portal to hunter-v2's portal plugin system.
 
 ```python
 from tools.notify import notify_start, notify_done, notify_error
-react("👀")  # ACK first — before any work
 notify_start("add-portal", sender=reply)
 ```
 

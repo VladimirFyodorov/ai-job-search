@@ -26,7 +26,6 @@ from tools.crons.daily_digest import inject_trigger
 from tools.notify import notify_start, notify_done, notify_error
 import os
 
-react("👀")  # ACK first — before any work
 container = os.environ.get('HUNTER_CONTAINER_NAME', 'hunter-v2-1')
 notify_start('digest', sender=reply)
 result = inject_trigger(container)

@@ -39,7 +39,6 @@ Optional arguments:
 
 ```python
 from tools.notify import notify_start, notify_done, notify_error
-react("👀")  # ACK first — before any work
 notify_start("scrape", sender=reply)
 ```
 

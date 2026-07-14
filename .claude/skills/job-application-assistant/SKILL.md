@@ -19,7 +19,6 @@ When the user provides a job posting (URL or text), follow this workflow:
 
 ```python
 from tools.notify import notify_start, notify_done
-react("👀")  # ACK first — before any work
 notify_start("job-application-assistant", sender=reply)
 ```
 
