@@ -4,6 +4,12 @@
 
 set -euo pipefail
 
+# If called with arguments (e.g. scheduler: command: python3 tools/crons/scheduler.py),
+# exec them directly and skip the Claude Code startup entirely.
+if [ $# -gt 0 ]; then
+  exec "$@"
+fi
+
 PLUGIN_DIR="${HOME}/.claude/plugins/cache/claude-plugins-official/telegram/0.0.6"
 
 # Telegram plugin state directory (auth token, access.json)
